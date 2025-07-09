@@ -1,5 +1,5 @@
 {
-    "name":"ServiceBusSDK",
+    "name":"Azure Service Bus SDK",
     "author":"Brad Wood <brad@ortussolutions.com>",
     "version":"1.0.0",
     "location":"https://downloads.ortussolutions.com/ortussolutions/servicebussdk/@build.version@/servicebussdk-@build.version@.zip",
