@@ -102,9 +102,4 @@ jobs:
 
 
 
-    - name: On failure
-      if: ${{ failure() }}
-      run: |
-          box server log
-          box system-log
           
