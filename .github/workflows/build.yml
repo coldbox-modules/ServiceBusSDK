@@ -98,7 +98,7 @@ jobs:
       run: |
         cd ${{github.workspace}}/.tmp/${MODULE_ID}
         cat box.json
-        box forgebox publish
+        box config set ENDPOINTS.FORGEBOX.APITOKEN=${{ secrets.BOX_CONFIG_ENDPOINTS_FORGEBOX_APITOKEN }} && forgebox publish
 
 
 
