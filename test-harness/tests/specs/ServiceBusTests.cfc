@@ -21,7 +21,7 @@
 		
 		describe( 'ServiceBusSDK Module', function(){
 
-			logManager = createObject("java", "org.apache.logging.log4j.LogManager");
+			/* logManager = createObject("java", "org.apache.logging.log4j.LogManager");
 			levelClass = createObject("java", "org.apache.logging.log4j.Level");
 			context = logManager.getContext(false);
 			config = context.getConfiguration();
@@ -35,7 +35,7 @@
 			reactorLoggerConfig.setLevel(levelClass.OFF);
 
 			// Apply the changes
-			context.updateLoggers();
+			context.updateLoggers(); */
 
 			beforeEach(function( currentSpec ){
 				setup();
