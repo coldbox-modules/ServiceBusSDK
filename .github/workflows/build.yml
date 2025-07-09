@@ -98,13 +98,5 @@ jobs:
       run: |
         cd ${{github.workspace}}/.tmp/${MODULE_ID}
         cat box.json
+        box config set ENDPOINTS.FORGEBOX.APITOKEN=${{ secrets.BOX_CONFIG_ENDPOINTS_FORGEBOX_APITOKEN }} 
         box forgebox publish
-
-
-
-    - name: On failure
-      if: ${{ failure() }}
-      run: |
-          box server log
-          box system-log
-          

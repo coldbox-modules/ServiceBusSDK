@@ -1,7 +1,4 @@
-[![CI](https://github.com/Ortus-Solutions/ServiceBusSDK/workflows/CI/badge.svg)](https://github.com/Ortus-Solutions/ServiceBusSDK/actions)
-
-
-# Welcome to the ServiceBusSDK Module
+# Welcome to the Azure ServiceBusSDK Module
 
 Azure Service Bus is a messaging as a service platform which supports queues and topics.  
 
