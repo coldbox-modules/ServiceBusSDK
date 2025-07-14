@@ -45,55 +45,59 @@ component accessors=true singleton ThreadSafe {
 	 * Creates a new ServiceBusClientBuilder instance.
 	 */
 	function newClientBuilder( required string fullyQualifiedNamespace ) {
-		var clientBuilder = createObject( 'java', 'com.azure.messaging.servicebus.ServiceBusClientBuilder' ).init()
-			.fullyQualifiedNamespace( arguments.fullyQualifiedNamespace );
-			var credOptions = settings.credentials;
+		var clientBuilder = createObject( 'java', 'com.azure.messaging.servicebus.ServiceBusClientBuilder' ).init();
 
-			if( credOptions.type == 'connectionString' ) {
-				clientBuilder.connectionString( credOptions.connectionString );
-			} else if( credOptions.type == 'default' ) {
-				var credBuilder = createObject( 'java', 'com.azure.identity.DefaultAzureCredentialBuilder' ).init();
-				
-				doAuthorityHost( credOptions, credBuilder );
-				doTenantId( credOptions, credBuilder );
-				doMaxRetry( credOptions, credBuilder );
-				doTokenRefreshOffset( credOptions, credBuilder );
+		if( !isNull( arguments.fullyQualifiedNamespace ) && !arguments.fullyQualifiedNamespace.isEmpty() ) {
+			clientBuilder.fullyQualifiedNamespace( arguments.fullyQualifiedNamespace );
+		
+		}
+		var credOptions = settings.credentials;
 
-				clientBuilder.credential( credBuilder.build() );
-			} else if( credOptions.type == 'ClientSecret' ) {
-				var credBuilder = createObject( 'java', 'com.azure.identity.ClientSecretCredentialBuilder' ).init();
+		if( credOptions.type == 'connectionString' ) {
+			clientBuilder.connectionString( credOptions.connectionString );
+		} else if( credOptions.type == 'default' ) {
+			var credBuilder = createObject( 'java', 'com.azure.identity.DefaultAzureCredentialBuilder' ).init();
+			
+			doAuthorityHost( credOptions, credBuilder );
+			doTenantId( credOptions, credBuilder );
+			doMaxRetry( credOptions, credBuilder );
+			doTokenRefreshOffset( credOptions, credBuilder );
 
-				doAuthorityHost( credOptions, credBuilder );
-				doTenantId( credOptions, credBuilder );
-				doMaxRetry( credOptions, credBuilder );
-				doTokenRefreshOffset( credOptions, credBuilder );
-				doClientSecret( credOptions, credBuilder );
-				doEnablePersistentCache( credOptions, credBuilder );
-				doClientId( credOptions, credBuilder );
+			clientBuilder.credential( credBuilder.build() );
+		} else if( credOptions.type == 'ClientSecret' ) {
+			var credBuilder = createObject( 'java', 'com.azure.identity.ClientSecretCredentialBuilder' ).init();
 
-				clientBuilder.credential( credBuilder.build() );
-			} else if( credOptions.type == 'ClientCertificate' ) {
-				var credBuilder = createObject( 'java', 'com.azure.identity.ClientCertificateCredentialBuilder' ).init();
+			doAuthorityHost( credOptions, credBuilder );
+			doTenantId( credOptions, credBuilder );
+			doMaxRetry( credOptions, credBuilder );
+			doTokenRefreshOffset( credOptions, credBuilder );
+			doClientSecret( credOptions, credBuilder );
+			doEnablePersistentCache( credOptions, credBuilder );
+			doClientId( credOptions, credBuilder );
 
-				doAuthorityHost( credOptions, credBuilder );
-				doClientId( credOptions, credBuilder );
-				doTenantId( credOptions, credBuilder );
-				doMaxRetry( credOptions, credBuilder );
-				doTokenRefreshOffset( credOptions, credBuilder );
-				doEnablePersistentCache( credOptions, credBuilder );
-				doCertificatePath( credOptions, credBuilder );
+			clientBuilder.credential( credBuilder.build() );
+		} else if( credOptions.type == 'ClientCertificate' ) {
+			var credBuilder = createObject( 'java', 'com.azure.identity.ClientCertificateCredentialBuilder' ).init();
 
-				clientBuilder.credential( credBuilder.build() );
-			}
+			doAuthorityHost( credOptions, credBuilder );
+			doClientId( credOptions, credBuilder );
+			doTenantId( credOptions, credBuilder );
+			doMaxRetry( credOptions, credBuilder );
+			doTokenRefreshOffset( credOptions, credBuilder );
+			doEnablePersistentCache( credOptions, credBuilder );
+			doCertificatePath( credOptions, credBuilder );
 
-			// TODO: implement these more in-depth options
-			// .clientOptions()
-			// .configuration()
-			// .retryOptions()
-			// .enableCrossEntityTransactions()
-			// .proxyOptions()
-			// .retryOptions()
-			// .transportType()
+			clientBuilder.credential( credBuilder.build() );
+		}
+
+		// TODO: implement these more in-depth options
+		// .clientOptions()
+		// .configuration()
+		// .retryOptions()
+		// .enableCrossEntityTransactions()
+		// .proxyOptions()
+		// .retryOptions()
+		// .transportType()
 
 
 
