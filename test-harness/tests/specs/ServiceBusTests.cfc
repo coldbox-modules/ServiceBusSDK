@@ -424,6 +424,32 @@
 
 				});
 
+				it( 'can deadLetter from sub queue', function(){
+					var sbClient = getSBClient();
+
+					var sender = sbClient.buildSender(
+						queueName='new-orders'
+					);
+					sender.sendMessage( { orderId=12345, customerName='John Doe' } );
+
+					var receiver = sbClient.buildReceiver(
+						queueName='new-orders',
+						receiveMode='PEEK_LOCK'
+					);
+
+					var message = receiver.receiveMessage( 2 );
+					var seqNum = message.deadLetter( deadLetterErrorDescription="dead letter desc", deadLetterReason="dead letter reason" );
+
+					var dlReceiver = sbClient.buildReceiver(
+						queueName='new-orders',
+						deadLetter=true,
+						receiveMode='PEEK_LOCK'
+					);
+
+					var dlMessage = dlReceiver.receiveMessage( 2 );
+					expect( dlMessage ).notToBeNull();
+				});
+
 			});
 	
 		});

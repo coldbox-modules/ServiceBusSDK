@@ -36,6 +36,13 @@ component accessors=true ThreadSafe {
 		if( receiverProperties.queueName.isEmpty() && receiverProperties.topicName.isEmpty() ) {
 			throw( message='You must specify either a queueName or topicName to build a receiver.' );
 		}
+		
+		// Validate that if topicName is provided, subscriptionName is also provided
+		if( !receiverProperties.topicName.isEmpty() && 
+			( isNull( receiverProperties.subscriptionName ) || receiverProperties.subscriptionName.isEmpty() ) ) {
+			throw( message='You must specify a subscriptionName when using a topicName to build a receiver.' );
+		}
+		
 		var receiverBuilder = SBClient.newClientBuilder( receiverProperties.fullyQualifiedNamespace )
 			.receiver();
 			
@@ -43,6 +50,18 @@ component accessors=true ThreadSafe {
 			receiverBuilder.queueName( receiverProperties.queueName );
 		} else if( !receiverProperties.topicName.isEmpty() ) {
 			receiverBuilder.topicName( receiverProperties.topicName );
+			receiverBuilder.subscriptionName( receiverProperties.subscriptionName );
+		}
+
+		// Add sub queue support (dead letter or transfer dead letter)
+		if( !isNull( receiverProperties.deadLetter ) && receiverProperties.deadLetter ) {
+			receiverBuilder.subQueue( 
+				createObject( 'java', 'com.azure.messaging.servicebus.models.SubQueue' ).DEAD_LETTER_QUEUE 
+			);
+		} else if( !isNull( receiverProperties.transferDeadLetter ) && receiverProperties.transferDeadLetter ) {
+			receiverBuilder.subQueue( 
+				createObject( 'java', 'com.azure.messaging.servicebus.models.SubQueue' ).TRANSFER_DEAD_LETTER_QUEUE 
+			);
 		}
 
 		if( !isNull( receiverProperties.prefetchCount ) && isNumeric( receiverProperties.prefetchCount ) ) {
