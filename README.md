@@ -266,3 +266,80 @@ sleep( 1000 );
 processor.stop();
 ```
 
+## Dead Letter
+
+When dead lettering a message, you can provide a description and reason, as well as a struct of properties to modify.
+
+```js
+
+var message = receiver.receiveMessage( 2 );
+message.deadLetter( deadLetterErrorDescription="dead letter desc", deadLetterReason="dead letter reason" );
+```
+
+To read from the dead letter sub queue, build a receiver like so:
+```js
+var dlReceiver = sbClient.buildReceiver(
+	queueName='new-orders',
+	deadLetter=true,
+	receiveMode='PEEK_LOCK'
+);
+```
+
+To process multiple messages the dead letter sub queue, build a Processor like so:
+```js
+var processor = sbClient.buildProcessor(
+	queueName='new-orders',
+	onMessage=function( message ){
+		// process the message
+	}
+	deadLetter=true
+);
+```
+
+To read from the transfer dead letter sub queue, use this flag:
+```js
+var dlReceiver = sbClient.buildReceiver(
+	queueName='new-orders',
+	transferDeadLetter=true,
+	receiveMode='PEEK_LOCK'
+);
+```
+
+To process multiple messages the transfer dead letter sub queue, build a Processor like so:
+```js
+var processor = sbClient.buildProcessor(
+	queueName='new-orders',
+	onMessage=function( message ){
+		// process the message
+	}
+	transferDeadLetter=true
+);
+```
+
+
+## Scheduled Messages
+
+To have a message obey a delay before being enqueued, you can use the `scheduledEnqueueTime` or the `scheduledDelaySeconds` argument.  You can also set the `scheduledEnqueueTime` property on the message, but these arguments to the `sendMessage()` method are more convenient and just set the property for you.
+
+* `scheduledEnqueueTime()` - This accepts a specific UTC time.  Pass in a `java.time.OffsetDateTime` instance, a CFML date object, or a string parseable by `OffsetDateTime.parse()`.
+* `scheduledDelaySeconds()` - Pass in a single integer which represent a number of seconds from right now.  We will calculate the UTC timestamp for you.
+
+This code sends a message in 15 seconds. This call completes right away, and the delay is handled inside of Azure.
+```js
+sender.sendMessage( 
+	message=messageBody, 
+	scheduledDelaySeconds=15
+);
+```
+
+This code sends a message in 15 seconds, but by creating a UTC timestamp 15 seconds from now.
+```js
+var fifteenSecondsFromNowUTC = createObject("java", "java.time.OffsetDateTime")
+	.now( createObject("java", "java.time.ZoneOffset" ).UTC )
+	.plusSeconds(secondsToWait);
+
+sender.sendMessage( 
+	message=messageBody,
+	scheduledEnqueueTime=fifteenSecondsFromNowUTC
+);
+```

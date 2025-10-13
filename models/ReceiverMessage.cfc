@@ -45,8 +45,6 @@ component accessors='true' extends='Message' {
 	 * This is only available if this message came from a processor or receiver which is
 	 * in PEEK_LOCK mode and autocomplete has not been disabled.
 	 * 
-	 * TODO: DeadLetterOptions
-	 * 
 	 */
 	function deadLetter( String deadLetterErrorDescription, String deadLetterReason, Struct propertiesToModify ){
 		arguments.message = this;

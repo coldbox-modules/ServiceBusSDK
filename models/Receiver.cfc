@@ -226,9 +226,7 @@ component accessors=true ThreadSafe {
 	/**
 	 * Dead letter the message.  This will move the message to the dead letter queue.
 	 * This is only available if the receiver is in PEEK_LOCK mode and autocomplete has not been disabled.
-	 * 
-	 * TODO: DeadLetterOptions
-	 * 
+	 *
 	 * @message The message to dead letter.
 	 */
 	function deadLetter( required message, String deadLetterErrorDescription, String deadLetterReason, Struct propertiesToModify ){

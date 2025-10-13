@@ -424,7 +424,7 @@
 
 				});
 
-				it( 'can deadLetter from sub queue', function(){
+				it( 'can deadLetter from sub queue via Receiver', function(){
 					var sbClient = getSBClient();
 
 					var sender = sbClient.buildSender(
@@ -438,7 +438,7 @@
 					);
 
 					var message = receiver.receiveMessage( 2 );
-					var seqNum = message.deadLetter( deadLetterErrorDescription="dead letter desc", deadLetterReason="dead letter reason" );
+					message.deadLetter( deadLetterErrorDescription="dead letter desc", deadLetterReason="dead letter reason" );
 
 					var dlReceiver = sbClient.buildReceiver(
 						queueName='new-orders',
@@ -448,6 +448,40 @@
 
 					var dlMessage = dlReceiver.receiveMessage( 2 );
 					expect( dlMessage ).notToBeNull();
+				});
+
+				it( 'can deadLetter from sub queue via Processor', function(){
+					var sbClient = getSBClient();
+
+					var sender = sbClient.buildSender(
+						queueName='new-orders'
+					);
+					sender.sendMessage( { orderId=12345, customerName='John Doe' } );
+
+					var receiver = sbClient.buildReceiver(
+						queueName='new-orders',
+						receiveMode='PEEK_LOCK'
+					);
+
+					var message = receiver.receiveMessage( 2 );
+					message.deadLetter( deadLetterErrorDescription="dead letter desc", deadLetterReason="dead letter reason" );
+					
+					var sbClient = getSBClient();
+					var deadLettersProcessed = 0;
+					var processor = sbClient.buildProcessor(
+						queueName='new-orders',
+						onMessage=function( message ){
+							createObject('java', 'java.lang.System').out.println( 'Received message: ' & serializeJSON( message.getBody() ) );
+							deadLettersProcessed++;
+						},
+						maxConcurrentCalls=1,
+						deadLetter=true
+					);
+					createObject('java', 'java.lang.System').out.println( 'Starting processor threads...' );
+					processor.start();
+					sleep( 1000 );
+					processor.stop();
+					expect( deadLettersProcessed ).toBeGTE( 1 );
 				});
 
 			});
