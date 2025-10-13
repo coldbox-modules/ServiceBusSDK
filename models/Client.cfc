@@ -181,7 +181,7 @@ component accessors=true singleton ThreadSafe {
 	 * https://javadoc.io/doc/com.azure/azure-messaging-servicebus/7.17.12/com/azure/messaging/servicebus/ServiceBusClientBuilder.ServiceBusProcessorClientBuilder.html
 	 * Creates a new ServiceBusProcessorClientBuilder
 	 */
-	// TODO: sub queue, subscription name, maxAutoLockRenewDuration(Duration maxAutoLockRenewDuration)
+	// TODO: maxAutoLockRenewDuration(Duration maxAutoLockRenewDuration)
 	function buildProcessor( 
 		String queueName='',
 		String topicName='',
@@ -192,7 +192,11 @@ component accessors=true singleton ThreadSafe {
 		Function onMessage,
 		Function onError,
 		boolean autoStart=false,
-		String fullyQualifiedNamespace=settings.fullyQualifiedNamespace
+		String fullyQualifiedNamespace=settings.fullyQualifiedNamespace,
+		Boolean deadLetter=false,
+		Boolean transferDeadLetter=false,
+		String subscriptionName
+
 	) {
 		return registerProcessor(
 			wirebox.getInstance( 'Processor@ServiceBusSDK', { SBClient : this, processorProperties : arguments } )
@@ -203,7 +207,7 @@ component accessors=true singleton ThreadSafe {
 	 * https://javadoc.io/static/com.azure/azure-messaging-servicebus/7.17.12/com/azure/messaging/servicebus/ServiceBusClientBuilder.ServiceBusReceiverClientBuilder.html
 	 * Creates a new ServiceBusReceiverClientBuilder
 	 */
-	// TODO: sub queue, subscription name, maxAutoLockRenewDuration(Duration maxAutoLockRenewDuration)
+	// TODO: maxAutoLockRenewDuration(Duration maxAutoLockRenewDuration)
 	function buildReceiver( 
 		String queueName='',
 		String topicName='',
@@ -211,7 +215,10 @@ component accessors=true singleton ThreadSafe {
 		Numeric prefetchCount,
 		String receiveMode='RECEIVE_AND_DELETE',
 		Boolean async=false,
-		String fullyQualifiedNamespace=settings.fullyQualifiedNamespace
+		String fullyQualifiedNamespace=settings.fullyQualifiedNamespace,
+		Boolean deadLetter=false,
+		Boolean transferDeadLetter=false,
+		String subscriptionName
 	) {
 		return registerReceiver(
 			wirebox.getInstance( 'Receiver@ServiceBusSDK', { SBClient : this, receiverProperties : arguments } )

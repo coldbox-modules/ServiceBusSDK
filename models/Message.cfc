@@ -104,8 +104,6 @@ component accessors='true'  {
 	 * This is only available if this message came from a processor or receiver which is
 	 * in PEEK_LOCK mode and autocomplete has not been disabled.
 	 * 
-	 * TODO: DeadLetterOptions
-	 * 
 	 */
 	function deadLetter(){
 		throw( "message has no assocated receiver context and cannot be dead lettered." );
