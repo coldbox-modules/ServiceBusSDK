@@ -83,7 +83,7 @@ component accessors=true ThreadSafe {
 			var result = jReceiver.peekMessage();
 		}
 		if( isNull( result ) ) {
-			return null;
+			return nullValue();
 		}
 		if( getAsync() ) {
 			return wirebox.getInstance( 'AsyncReceiverMessage@ServiceBusSDK', { receiver : this,  mono : result } );
@@ -136,9 +136,21 @@ component accessors=true ThreadSafe {
 	function receiveMessage( numeric maxWaitTimeSeconds=0) {
 		var result = receiveMessages( 1, arguments.maxWaitTimeSeconds );
 		if( result.len() == 0 ) {
-			return null;
+			return nullValue();
 		}
 		return result[1];
+	}
+
+	/**
+	 * Receive a deferred message.  This method will not block.  It will either return a message, or error if the message cannot be found.
+	 * 
+	 * @sequenceNumber The sequence number of the deferred message to receive.
+	 * 
+	 * @return A message or null if no message is available.
+	 */
+	function receiveDeferredMessage( numeric sequenceNumber) {
+		var message = jReceiver.receiveDeferredMessage( arguments.sequenceNumber );
+		return wirebox.getInstance( 'ReceiverMessage@ServiceBusSDK', { receiver : this,  jMessage : message } );
 	}
 
 	/**
@@ -174,7 +186,7 @@ component accessors=true ThreadSafe {
 	 * 
 	 * TODO: AbandonOptions
 	 * 
-	 * @param message The message to abandon.
+	 * @message The message to abandon.
 	 */
 	function abandon( required message ) {
 		jReceiver.abandon( message.getJMessage() );
@@ -186,7 +198,7 @@ component accessors=true ThreadSafe {
 	 * 
 	 * TODO: CompleteOptions
 	 * 
-	 * @param message The message to complete.
+	 * @message The message to complete.
 	 */
 	function complete( required message ){
 		jReceiver.complete( message.getJMessage() );
@@ -198,10 +210,10 @@ component accessors=true ThreadSafe {
 	 * 
 	 * TODO: DeadLetterOptions
 	 * 
-	 * @param message The message to dead letter.
+	 * @message The message to dead letter.
 	 */
-	function deadLetter( required message ){
-		jReceiver.deadLetter( message.getJMessage() );
+	function deadLetter( required message, String deadLetterErrorDescription, String deadLetterReason, Struct propertiesToModify ){
+		jReceiver.deadLetter( message.getJMessage(), message.buildDeadLetterOptions( argumentCollection=arguments ) );
 	}
 
 	/**
@@ -210,10 +222,14 @@ component accessors=true ThreadSafe {
 	 * 
 	 * TODO: DeferOptions
 	 * 
-	 * @param message The message to defer.
+	 * @message The message to defer.
+	 * 
+	 * @return The sequence number of the deferred message.
 	 */
-	function defer( required message ){
+	numeric function defer( required message ){
+		var sequenceNumber = message.getSequenceNumber();
 		jReceiver.defer( message.getJMessage() );
+		return sequenceNumber;
 	}
 	
 	/**
@@ -240,6 +256,10 @@ component accessors=true ThreadSafe {
 				getSBClient().unregisterreceiver( this );
 			}
 		}
+	}
+
+	private function nullValue() {
+		return;
 	}
 
 }

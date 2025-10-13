@@ -26,7 +26,8 @@ component accessors=true ThreadSafe {
 	function init(  Client SBClient,  Struct senderProperties ) {
 		setSBClient( arguments.SBClient );
 		setID( createUUID() );
-
+		
+		variables.UTCzoneOffset = createObject( "java", "java.time.ZoneOffset" ).UTC;
 
 		if( senderProperties.queueName.isEmpty() && senderProperties.topicName.isEmpty() ) {
 			throw( message='You must specify either a queueName or topicName to build a sender.' );
@@ -59,19 +60,41 @@ component accessors=true ThreadSafe {
 	 * - partitionKey: The partition key for the message
 	 * - replyTo: The reply-to address for the message
 	 * - replyToSessionId: The session ID for the reply-to address
-	 * - scheduledEnqueueTime: The time to schedule the message for enqueueing (pass an OffsetDateTime instance, a CF date, or a string to parse using OffsetDateTime.parse())
+	 * - scheduledEnqueueTime: The UTC date/time to schedule the message for enqueueing (pass an OffsetDateTime instance, a CF date, or a string to parse using OffsetDateTime.parse())
+	 * - scheduledDelaySeconds: The delay in seconds before the message is enqueued
 	 * - sessionId: The session ID for the message
 	 * - subject: The subject of the message
 	 * - timeToLive: The time to live for the message in seconds (pass a number)
 	 * - to: The destination address for the message
 	 * - properties: A struct of additional application properties to set on the message.  These are arbitrary key-value pairs that will be serialized.
 	 * 
-	 * @param message The message to send, can be a string or a struct/array
-	 * @param messageMeta Optional metadata for the message, such as contentType, correlationId, etc.
-	 * @return void
+	 * @message The message to send, can be a string or a struct/array
+	 * @messageMeta Optional metadata for the message, such as contentType, correlationId, etc.
+	 * @scheduledEnqueueTime If provided, schedules the message to be enqueued at the specified UTC date/time.  Can be a java.time.OffsetDateTime instance, a ColdFusion date object, or a string parseable by OffsetDateTime.parse().
+	 * @scheduledDelaySeconds If provided, schedules the message to be enqueued after the specified delay in seconds.
+	 * 
+	 * @return If sending a scheduled message, returns the sequence number of the scheduled message.  Otherwise returns the sender instance for chaining.
 	 */
-	Sender function sendMessage( required Any message, Struct messageMeta={} ) {
-		getJSender().sendMessage( buildMessage( arguments.message, arguments.messageMeta ) );
+	Any function sendMessage( required Any message, Struct messageMeta={}, any scheduledEnqueueTime, numeric scheduledDelaySeconds ) {
+		// We support these as arguments for convenience, but they go into messageMeta
+		if( !isNull( arguments.scheduledEnqueueTime ) ) {
+			messageMeta.scheduledEnqueueTime = arguments.scheduledEnqueueTime;
+		}
+		if( !isNull( arguments.scheduledDelaySeconds ) ) {
+			messageMeta.scheduledDelaySeconds = arguments.scheduledDelaySeconds;
+		}
+
+		var theMessage = buildMessage( arguments.message, arguments.messageMeta );
+
+		// If we have a scheduledEnqueueTime, regardless of how it got there,
+		// use the scheduleMessage() method so we get the sequence number back
+		var actualScheduledEnqueueTime = theMessage.getScheduledEnqueueTime();
+		if( !isNull( actualScheduledEnqueueTime ) ) {
+			return getJSender().scheduleMessage( theMessage, actualScheduledEnqueueTime );
+		}
+
+		// For non-scheduled messages, just send them
+		getJSender().sendMessage( theMessage );
 		return this;
 	}
 
@@ -120,16 +143,22 @@ component accessors=true ThreadSafe {
 			} else if ( isDate( enqueueTime ) ) {
 				// Convert ColdFusion date to OffsetDateTime (UTC)
 				var instant = createObject( "java", "java.util.Date" ).init( enqueueTime ).toInstant();
-				var zoneOffset = createObject( "java", "java.time.ZoneOffset" ).UTC;
-				jOffsetDateTime = createObject( "java", "java.time.OffsetDateTime" ).ofInstant( instant, zoneOffset );
+				jOffsetDateTime = createObject( "java", "java.time.OffsetDateTime" ).ofInstant( instant, variables.UTCzoneOffset );
 			} else if ( isSimpleValue( enqueueTime ) ) {
 				// Try to parse string to OffsetDateTime
 				jOffsetDateTime = createObject( "java", "java.time.OffsetDateTime" ).parse( enqueueTime.toString() );
 			} else {
 				throw( message="Unable to convert scheduledEnqueueTime to OffsetDateTime." );
 			}
-
 			jMessage.setScheduledEnqueueTime( jOffsetDateTime );
+		}
+		if( messageMeta.keyExists( 'scheduledDelaySeconds' ) && isNumeric( messageMeta.scheduledDelaySeconds ) ) {
+			var utcNow = createObject('java', 'java.time.OffsetDateTime').now(
+				variables.UTCzoneOffset
+			);
+			jMessage.setScheduledEnqueueTime(
+				utcNow.plusSeconds( messageMeta.scheduledDelaySeconds )
+			);
 		}
 		if( messageMeta.keyExists( 'sessionId' ) ) {
 			jMessage.setSessionId( messageMeta.sessionId.toString() );
