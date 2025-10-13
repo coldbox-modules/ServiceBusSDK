@@ -142,5 +142,32 @@ component accessors='true'  {
 		return headers[ name ];
 	}
 	
+	/**
+	 * Helper to build DeadLetterOptions from arguments.
+	 * 
+	 * @deadLetterErrorDescription Optional description of why the message is being dead lettered.
+	 * @deadLetterReason Optional reason for dead lettering the message.
+	 * @propertiesToModify Optional struct of properties to modify on the message when dead lettering it.
+	 * 
+	 * @return A DeadLetterOptions Java object.
+	 */
+	function buildDeadLetterOptions( String deadLetterErrorDescription, String deadLetterReason, Struct propertiesToModify ) {
+		var jDeadLetterOptions = createObject( 'java', 'com.azure.messaging.servicebus.models.DeadLetterOptions' ).init();
+		if( !isNull( arguments.deadLetterErrorDescription ) ) {
+			jDeadLetterOptions.setDeadLetterErrorDescription( arguments.deadLetterErrorDescription );
+		}
+		if( !isNull( arguments.deadLetterReason ) ) {
+			jDeadLetterOptions.setDeadLetterReason( arguments.deadLetterReason );
+		}
+		if( !isNull( arguments.propertiesToModify ) && isStruct( arguments.propertiesToModify ) ) {
+			var jPropertiesToModify = createObject( 'java', 'java.util.HashMap' ).init();
+			for( var key in arguments.propertiesToModify ) {
+				jPropertiesToModify.put( key, arguments.propertiesToModify[ key ] );
+			}
+			jDeadLetterOptions.setPropertiesToModify( jPropertiesToModify );
+		}
+		return jDeadLetterOptions;
+
+	}
 	
 }

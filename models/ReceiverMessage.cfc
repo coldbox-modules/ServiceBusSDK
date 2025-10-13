@@ -48,8 +48,9 @@ component accessors='true' extends='Message' {
 	 * TODO: DeadLetterOptions
 	 * 
 	 */
-	function deadLetter(){
-		getReceiver().deadLetter( this );
+	function deadLetter( String deadLetterErrorDescription, String deadLetterReason, Struct propertiesToModify ){
+		arguments.message = this;
+		getReceiver().deadLetter( argumentCollection=arguments );
 		return this;
 	}
 
@@ -62,8 +63,7 @@ component accessors='true' extends='Message' {
 	 * 
 	 */
 	function defer(){
-		getReceiver().defer( this );
-		return this;
+		return getReceiver().defer( this );
 	}
 	
 }

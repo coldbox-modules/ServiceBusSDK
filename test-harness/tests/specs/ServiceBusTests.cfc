@@ -274,6 +274,182 @@
 					message.complete();
 				});
 
+				it( 'can handle deferred messages', function(){
+					var sbClient = getSBClient();
+
+					var sender = sbClient.buildSender(
+						queueName='new-orders'
+					);
+					sender.sendMessage( { orderId=12345, customerName='John Doe' } );
+
+					var receiver = sbClient.buildReceiver(
+						queueName='new-orders',
+						receiveMode='PEEK_LOCK'
+					);
+
+					var message = receiver.receiveMessage( 2 );
+					var seqNum = message.defer();
+
+					var message = receiver.receiveDeferredMessage( seqNum );
+					message.complete();
+				});
+
+				it( 'can scheduled message time via meta', function(){
+					var sbClient = getSBClient();
+
+					var receiver = sbClient.buildReceiver(
+						queueName='new-orders',
+						receiveMode='RECEIVE_AND_DELETE'
+					);
+					// purge the queue
+					var message = receiver.receiveMessage( 1 );
+					while( !isNull( message ) ) {
+						message = receiver.receiveMessage( 1 );
+					}
+
+					var sender = sbClient.buildSender(
+						queueName='new-orders'
+					);
+					var secondsToWait = 3;
+					var start = getTickCount();
+					sender.sendMessage( 
+						{ orderId=12345, customerName='scheduled John Doe' }, 
+						{ scheduledEnqueueTime=createObject("java", "java.time.OffsetDateTime").now(createObject("java", "java.time.ZoneOffset").UTC).plusSeconds(secondsToWait) } 
+					);
+
+					var message = receiver.receiveMessage( 5 );
+					var secondsTaken = (getTickCount()-start)/1000;
+					expect( secondsTaken ).toBeGTE( secondsToWait );
+				});
+
+				it( 'can scheduled message delay seconds via meta', function(){
+					var sbClient = getSBClient();
+
+					var receiver = sbClient.buildReceiver(
+						queueName='new-orders',
+						receiveMode='RECEIVE_AND_DELETE'
+					);
+					// purge the queue
+					var message = receiver.receiveMessage( 1 );
+					while( !isNull( message ) ) {
+						message = receiver.receiveMessage( 1 );
+					}
+
+					var sender = sbClient.buildSender(
+						queueName='new-orders'
+					);
+					var secondsToWait = 3;
+					var start = getTickCount();
+					sender.sendMessage( 
+						{ orderId=12345, customerName='scheduled John Doe' }, 
+						{ scheduledDelaySeconds=secondsToWait } 
+					);
+
+					var message = receiver.receiveMessage( 5 );
+					var secondsTaken = (getTickCount()-start)/1000;
+					expect( secondsTaken ).toBeGTE( secondsToWait );
+				});
+
+				it( 'can scheduled message time via args', function(){
+					var sbClient = getSBClient();
+
+					var receiver = sbClient.buildReceiver(
+						queueName='new-orders',
+						receiveMode='RECEIVE_AND_DELETE'
+					);
+					// purge the queue
+					var message = receiver.receiveMessage( 1 );
+					while( !isNull( message ) ) {
+						message = receiver.receiveMessage( 1 );
+					}
+
+					var sender = sbClient.buildSender(
+						queueName='new-orders'
+					);
+					var secondsToWait = 3;
+					var start = getTickCount();
+					sender.sendMessage( 
+						message={ orderId=12345, customerName='scheduled John Doe' },
+						scheduledEnqueueTime=createObject("java", "java.time.OffsetDateTime").now(createObject("java", "java.time.ZoneOffset").UTC).plusSeconds(secondsToWait)
+					);
+
+					var message = receiver.receiveMessage( 5 );
+					var secondsTaken = (getTickCount()-start)/1000;
+					expect( secondsTaken ).toBeGTE( secondsToWait );
+				});
+
+				it( 'can scheduled message delay seconds via args', function(){
+					var sbClient = getSBClient();
+
+					var receiver = sbClient.buildReceiver(
+						queueName='new-orders',
+						receiveMode='RECEIVE_AND_DELETE'
+					);
+					// purge the queue
+					var message = receiver.receiveMessage( 1 );
+					while( !isNull( message ) ) {
+						message = receiver.receiveMessage( 1 );
+					}
+
+					var sender = sbClient.buildSender(
+						queueName='new-orders'
+					);
+					var secondsToWait = 3;
+					var start = getTickCount();
+					sender.sendMessage( 
+						message={ orderId=12345, customerName='scheduled John Doe' },
+						scheduledDelaySeconds=secondsToWait
+					);
+
+					var message = receiver.receiveMessage( 5 );
+					var secondsTaken = (getTickCount()-start)/1000;
+					expect( secondsTaken ).toBeGTE( secondsToWait );
+				});
+
+				it( 'can deadLetter a message', function(){
+					var sbClient = getSBClient();
+
+					var sender = sbClient.buildSender(
+						queueName='new-orders'
+					);
+					sender.sendMessage( { orderId=12345, customerName='John Doe' } );
+
+					var receiver = sbClient.buildReceiver(
+						queueName='new-orders',
+						receiveMode='PEEK_LOCK'
+					);
+
+					var message = receiver.receiveMessage( 2 );
+					var seqNum = message.deadLetter( deadLetterErrorDescription="dead letter desc", deadLetterReason="dead letter reason" );
+
+				});
+
+				it( 'can deadLetter from sub queue', function(){
+					var sbClient = getSBClient();
+
+					var sender = sbClient.buildSender(
+						queueName='new-orders'
+					);
+					sender.sendMessage( { orderId=12345, customerName='John Doe' } );
+
+					var receiver = sbClient.buildReceiver(
+						queueName='new-orders',
+						receiveMode='PEEK_LOCK'
+					);
+
+					var message = receiver.receiveMessage( 2 );
+					var seqNum = message.deadLetter( deadLetterErrorDescription="dead letter desc", deadLetterReason="dead letter reason" );
+
+					var dlReceiver = sbClient.buildReceiver(
+						queueName='new-orders',
+						deadLetter=true,
+						receiveMode='PEEK_LOCK'
+					);
+
+					var dlMessage = dlReceiver.receiveMessage( 2 );
+					expect( dlMessage ).notToBeNull();
+				});
+
 			});
 	
 		});

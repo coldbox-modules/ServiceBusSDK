@@ -5,5 +5,8 @@
     "JVM":{
         "javaVersion":"openjdk21"
     },
-    "name":"ServiceBusSDK_boxlang"
+    "name":"ServiceBusSDK_boxlang",
+    "scripts" : {
+        "onServerInitialInstall" : "install bx-compat-cfml"
+    }
 }

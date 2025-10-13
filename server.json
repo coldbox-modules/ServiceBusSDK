@@ -2,6 +2,7 @@
     "app":{
         "cfengine":"adobe@2023"
     },
+    "name":"ServiceBusSDK",
     "web":{
         "http":{
             "port":"60299"

@@ -49,8 +49,8 @@ component accessors='true' extends='Message' {
 	 * TODO: DeadLetterOptions
 	 * 
 	 */
-	function deadLetter(){
-		jMessageContext.deadLetter();
+	function deadLetter( String deadLetterErrorDescription, String deadLetterReason, Struct propertiesToModify ){
+		jMessageContext.deadLetter( buildDeadLetterOptions( argumentCollection=arguments ) );
 		return this;
 	}
 
@@ -63,8 +63,9 @@ component accessors='true' extends='Message' {
 	 * 
 	 */
 	function defer(){
-		jMessageContext.defer();
-		return this;
+		var sequenceNumber = message.getSequenceNumber();
+		return jMessageContext.defer();
+		return sequenceNumber;
 	}
 	
 }
