@@ -37,7 +37,7 @@
         "jackson-databind-2.17.1":"jar:https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.17.1/jackson-databind-2.17.1.jar",
         "jackson-annotations-2.17.1":"jar:https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.17.1/jackson-annotations-2.17.1.jar",
         "jackson-datatype-jsr310-2.17.1":"jar:https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.1/jackson-datatype-jsr310-2.17.1.jar",
-        "cbproxies":"^1.5.0+5"
+        "cbproxies":"^1.8.0"
     },
     "devDependencies":{},
     "installPaths":{
