@@ -1,7 +1,7 @@
 /**
 * This is a transient that represents a single message
 */
-component accessors='true'  {
+component accessors='true' transientCache='false' {
 
 	property name='jMessage';
 		
